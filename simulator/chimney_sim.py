@@ -17,7 +17,7 @@ class ChimneySimulator:
         # ---- Physical state ----
         self.grease_level = 0.0           # invisible grease accumulation
         self.base_current = 1.0           # Amps (clean filter)
-        self.max_grease = 10.0            # saturation point
+        self.max_grease = 20.0            # saturation point (higher for demo)
         self.cycle_count = 0
 
     def run_cycle(self, speed_level=2):
@@ -25,19 +25,21 @@ class ChimneySimulator:
         Simulate one chimney usage cycle.
         Grease builds with usage, motor current increases.
         
-        Tuned: each cycle adds 0.02 Amps to current draw
-        At 30 cycles: current goes from 1.0 to ~1.6 Amps (visible slope)
+        Tuned for demo visibility:
+        - At 30 cycles with 3x: grease ~18, current ~1.54A (severe)
+        - Max grease 20 = current 1.6A = 0% health
         """
         self.cycle_count += 1
         
         # Grease builds up - tuned for visible degradation
-        grease_increment = 0.3 * speed_level  # Much faster buildup
+        grease_increment = 0.3 * speed_level  # Fast buildup for demo
         self.grease_level = min(
             self.grease_level + grease_increment,
             self.max_grease
         )
 
-        # Current draw increases with grease (0.02 Amps per cycle)
+        # Current draw increases with grease
+        # At grease=20: current = 1.0 + 0.6 = 1.6A (severe/failure)
         avg_current = round(
             self.base_current
             + (self.grease_level * 0.03)

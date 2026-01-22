@@ -95,6 +95,52 @@
             color: #ef4444;
         }
         
+        /* Health Score Bar */
+        .health-bar-container {
+            width: 100%;
+            max-width: 400px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            margin: 15px auto;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .health-bar {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, #10b981, #10b981);
+            border-radius: 12px;
+            transition: width 0.5s ease, background 0.5s ease;
+        }
+        
+        /* ML Metrics Box */
+        .ml-metrics {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 15px auto;
+            max-width: 500px;
+            text-align: left;
+            font-size: 14px;
+        }
+        
+        .ml-metrics p {
+            margin: 6px 0;
+        }
+        
+        .anomaly-alert {
+            background: #fef2f2;
+            border: 1px solid #ef4444;
+            color: #b91c1c;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px auto;
+            max-width: 500px;
+            animation: pulse 1.5s infinite;
+        }
+        
         /* Loading Overlay */
         .loading-overlay {
             display: none;
@@ -147,9 +193,245 @@
         .loading-dots {
             animation: pulse 1.5s ease-in-out infinite;
         }
+
+        /* ---------- INSTRUCTION POPUP ---------- */
+        .instruction-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            animation: slideIn 0.5s ease-out, glow 2s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .instruction-banner:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(79, 70, 229, 0.5);
+        }
+
+        .instruction-banner .icon {
+            font-size: 24px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4); }
+            50% { box-shadow: 0 4px 30px rgba(79, 70, 229, 0.7); }
+        }
+
+        /* ---------- INSTRUCTION MODAL ---------- */
+        .instruction-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .instruction-modal.active {
+            display: flex;
+        }
+
+        .instruction-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 30px;
+            margin: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalIn 0.3s ease-out;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .instruction-content h2 {
+            color: #4f46e5;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instruction-content .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .instruction-content .close-btn:hover {
+            color: #ef4444;
+        }
+
+        .instruction-section {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-left: 4px solid #4f46e5;
+        }
+
+        .instruction-section h3 {
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .instruction-section p, .instruction-section ul {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .instruction-section ul {
+            padding-left: 20px;
+            margin-top: 8px;
+        }
+
+        .instruction-section li {
+            margin: 5px 0;
+        }
+
+        .metric-badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .got-it-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .got-it-btn:hover {
+            background: linear-gradient(135deg, #4338ca, #6d28d9);
+        }
     </style>
 </head>
 <body>
+
+<!-- Instruction Banner (bottom-right popup) -->
+<div id="instructionBanner" class="instruction-banner" onclick="openInstructions()">
+    <span class="icon">📖</span>
+    <span>Click here for Demo Instructions</span>
+</div>
+
+<!-- Instruction Modal -->
+<div id="instructionModal" class="instruction-modal" onclick="closeInstructionsOutside(event)">
+    <div class="instruction-content" onclick="event.stopPropagation()">
+        <h2>🤖 TTK Care AI - Demo Guide</h2>
+        
+        <div class="instruction-section">
+            <h3>🎯 What This Demo Shows</h3>
+            <p>This is a <strong>Predictive Maintenance System</strong> for IoT appliances. It uses machine learning to detect degradation and predict when maintenance is needed.</p>
+        </div>
+
+        <div class="instruction-section">
+            <h3>☕ Smart Kettle Demo</h3>
+            <ul>
+                <li><strong>Simulate Boil:</strong> Each cycle adds mineral scale buildup</li>
+                <li><strong>Watch the health bar</strong> go from green → yellow → red</li>
+                <li><strong>Descale:</strong> Resets the kettle to healthy state</li>
+                <li>Try 3× (30 cycles) to see severe scaling quickly</li>
+            </ul>
+        </div>
+
+        <div class="instruction-section">
+            <h3>🍳 Kitchen Chimney Demo</h3>
+            <ul>
+                <li><strong>Simulate Usage:</strong> Cooking adds grease buildup</li>
+                <li><strong>AI Auto-Clean:</strong> When ON, automatically cleans at &lt;30% health</li>
+                <li><strong>Toggle OFF</strong> to see full degradation manually</li>
+                <li>Try 3× (30 cycles) repeatedly to see the curve</li>
+            </ul>
+        </div>
+
+        <div class="instruction-section">
+            <h3>📊 ML Metrics Explained</h3>
+            <ul>
+                <li><span class="metric-badge">Health Score</span> 100% = Perfect, 0% = Needs maintenance</li>
+                <li><span class="metric-badge">Slope</span> Rate of degradation per cycle</li>
+                <li><span class="metric-badge">Acceleration</span> Is degradation speeding up?</li>
+                <li><span class="metric-badge">RUL</span> Predicted cycles until failure</li>
+            </ul>
+        </div>
+
+        <div class="instruction-section">
+            <h3>🧠 How the ML Model Works</h3>
+            <ul>
+                <li><strong>Polynomial Regression (degree 2):</strong> Fits curve to last 20 data points</li>
+                <li><strong>Z-Score Anomaly Detection:</strong> Detects sudden spikes (threshold: 2.5σ)</li>
+                <li><strong>Health Score:</strong> Linear interpolation between baseline and failure threshold</li>
+                <li><strong>RUL:</strong> Extrapolates polynomial curve to predict future failure</li>
+            </ul>
+        </div>
+
+        <div class="instruction-section">
+            <h3>💡 Demo Tips</h3>
+            <ul>
+                <li>Start fresh: Descale/Auto-clean before demonstrating</li>
+                <li>Use 3× speed for quick visible results</li>
+                <li>Watch the chart update in real-time</li>
+                <li>Compare with/without AI Auto-Clean enabled</li>
+            </ul>
+        </div>
+
+        <button class="got-it-btn" onclick="closeInstructions()">Got it! Let's explore 🚀</button>
+    </div>
+</div>
 
 <!-- Loading Overlay -->
 <div id="loadingOverlay" class="loading-overlay">
@@ -185,9 +467,21 @@
 
         <h2>Smart Kettle – AI Diagnostics</h2>
 
+        <!-- Health Score Bar -->
+        <div class="health-bar-container">
+            <div class="health-bar" id="kettleHealthBar"></div>
+        </div>
+        <p>Health Score: <b id="kettleHealthScore">—</b>/100</p>
+
         <p>Status: <b id="kettleHealth">—</b></p>
         <p id="kettleAlert">—</p>
-        <p>Degradation slope: <span id="kettleSlope">—</span></p>
+        
+        <!-- ML Metrics -->
+        <div class="ml-metrics">
+            <p>📈 Slope: <span id="kettleSlope">—</span> | Acceleration: <span id="kettleAccel">—</span></p>
+            <p id="kettleRUL">⏱️ Remaining Life: —</p>
+            <p id="kettleAnomaly" style="display:none;">⚠️ Anomaly: —</p>
+        </div>
 
         <label>Simulation Speed:</label>
         <select id="kettleMultiplier">
@@ -213,9 +507,22 @@
 
         <h2>Kitchen Chimney – AI Diagnostics</h2>
 
+        <!-- Health Score Bar -->
+        <div class="health-bar-container">
+            <div class="health-bar" id="chimneyHealthBar"></div>
+        </div>
+        <p>Health Score: <b id="chimneyHealthScore">—</b>/100</p>
+
         <p>Status: <b id="chimneyHealth">—</b></p>
         <p id="chimneyAlert">—</p>
-        <p>Degradation slope: <span id="chimneySlope">—</span></p>
+        
+        <!-- ML Metrics -->
+        <div class="ml-metrics">
+            <p>📈 Slope: <span id="chimneySlope">—</span> | Acceleration: <span id="chimneyAccel">—</span></p>
+            <p id="chimneyRUL">⏱️ Remaining Life: —</p>
+            <p id="chimneyAnomaly" style="display:none;">⚠️ Anomaly: —</p>
+        </div>
+        
         <p>AI Auto-Clean: <b id="autoCleanStatus">—</b></p>
 
         <label>Simulation Speed:</label>
@@ -254,8 +561,47 @@ const toggleBtn = document.getElementById('toggleBtn');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const loadingText = document.getElementById('loadingText');
 
+// ML Metrics DOM Elements
+const kettleHealthBar = document.getElementById('kettleHealthBar');
+const kettleHealthScore = document.getElementById('kettleHealthScore');
+const kettleAccel = document.getElementById('kettleAccel');
+const kettleRUL = document.getElementById('kettleRUL');
+const kettleAnomaly = document.getElementById('kettleAnomaly');
+const chimneyHealthBar = document.getElementById('chimneyHealthBar');
+const chimneyHealthScore = document.getElementById('chimneyHealthScore');
+const chimneyAccel = document.getElementById('chimneyAccel');
+const chimneyRUL = document.getElementById('chimneyRUL');
+const chimneyAnomaly = document.getElementById('chimneyAnomaly');
+
 // Track auto-clean state locally
 let autoCleanEnabled = true;
+
+// Instruction modal elements
+const instructionBanner = document.getElementById('instructionBanner');
+const instructionModal = document.getElementById('instructionModal');
+
+/* ---------- INSTRUCTION MODAL FUNCTIONS ---------- */
+function openInstructions() {
+    instructionModal.classList.add('active');
+}
+
+function closeInstructions() {
+    instructionModal.classList.remove('active');
+    // Banner stays visible for future clicks
+}
+
+function closeInstructionsOutside(event) {
+    if (event.target === instructionModal) {
+        closeInstructions();
+    }
+}
+
+// Auto-show instruction banner on page load (with slight delay for effect)
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        instructionBanner.style.display = 'flex';
+    }, 1000);
+});
 
 /* ---------- LOADING HELPER ---------- */
 function showLoading(message, duration = 2500) {
@@ -267,6 +613,25 @@ function showLoading(message, duration = 2500) {
             resolve();
         }, duration);
     });
+}
+
+/* ---------- HEALTH BAR HELPER ---------- */
+function updateHealthBar(score, barElement, scoreElement) {
+    if (!barElement || !scoreElement) return;
+    
+    // Handle null/undefined but NOT 0 (0 is a valid score)
+    const validScore = Math.max(0, Math.min(100, score !== null && score !== undefined ? score : 100));
+    barElement.style.width = validScore + '%';
+    scoreElement.innerText = Math.round(validScore) + '%';
+    
+    // Color based on health score
+    if (validScore >= 70) {
+        barElement.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+    } else if (validScore >= 40) {
+        barElement.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+    } else {
+        barElement.style.background = 'linear-gradient(90deg, #ef4444, #f87171)';
+    }
 }
 
 /* ---------- VIEW SWITCHING ---------- */
@@ -296,6 +661,10 @@ async function loadKettleStatus() {
             kettleHealth.innerText = "No Data";
             kettleAlert.innerText = "Start simulation to generate data";
             kettleSlope.innerText = "—";
+            updateHealthBar(100, kettleHealthBar, kettleHealthScore);
+            kettleAccel.innerText = "—";
+            kettleRUL.innerText = "—";
+            kettleAnomaly.innerText = "";
             return;
         }
         const d = await res.json();
@@ -311,6 +680,32 @@ async function loadKettleStatus() {
             kettleHealth.style.color = "#f59e0b";
         } else {
             kettleHealth.style.color = "#ef4444";
+        }
+
+        // Update ML metrics
+        if (d.ml_analysis) {
+            const ml = d.ml_analysis;
+            updateHealthBar(ml.health_score, kettleHealthBar, kettleHealthScore);
+            kettleAccel.innerText = ml.acceleration ? ml.acceleration.toFixed(4) : "—";
+            
+            // RUL is a nested object with cycles_to_failure
+            if (ml.rul && ml.rul.cycles_to_failure !== null) {
+                kettleRUL.innerText = `~${ml.rul.cycles_to_failure} cycles`;
+            } else {
+                kettleRUL.innerText = "N/A";
+            }
+            
+            // Anomaly is a nested object with is_anomaly
+            if (ml.anomaly && ml.anomaly.is_anomaly) {
+                kettleAnomaly.innerText = "⚠️ ANOMALY DETECTED";
+            } else {
+                kettleAnomaly.innerText = "";
+            }
+        } else {
+            updateHealthBar(100, kettleHealthBar, kettleHealthScore);
+            kettleAccel.innerText = "—";
+            kettleRUL.innerText = "—";
+            kettleAnomaly.innerText = "";
         }
 
         if (d.trend && d.trend.length > 0) {
@@ -360,6 +755,10 @@ async function loadChimneyStatus() {
             chimneyAlert.innerText = "Start simulation to generate data";
             chimneySlope.innerText = "—";
             autoCleanStatus.innerText = autoCleanEnabled ? "ON ✓" : "OFF ✗";
+            updateHealthBar(100, chimneyHealthBar, chimneyHealthScore);
+            chimneyAccel.innerText = "—";
+            chimneyRUL.innerText = "—";
+            chimneyAnomaly.innerText = "";
             return;
         }
         const d = await res.json();
@@ -385,6 +784,32 @@ async function loadChimneyStatus() {
         autoCleanStatus.style.color = autoCleanEnabled ? "#10b981" : "#ef4444";
         toggleBtn.innerText = autoCleanEnabled ? "Turn Auto-Clean OFF" : "Turn Auto-Clean ON";
         toggleBtn.style.background = autoCleanEnabled ? "#10b981" : "#ef4444";
+
+        // Update ML metrics
+        if (d.ml_analysis) {
+            const ml = d.ml_analysis;
+            updateHealthBar(ml.health_score, chimneyHealthBar, chimneyHealthScore);
+            chimneyAccel.innerText = ml.acceleration ? ml.acceleration.toFixed(6) : "—";
+            
+            // RUL is a nested object with cycles_to_failure
+            if (ml.rul && ml.rul.cycles_to_failure !== null) {
+                chimneyRUL.innerText = `~${ml.rul.cycles_to_failure} cycles`;
+            } else {
+                chimneyRUL.innerText = "N/A";
+            }
+            
+            // Anomaly is a nested object with is_anomaly
+            if (ml.anomaly && ml.anomaly.is_anomaly) {
+                chimneyAnomaly.innerText = "⚠️ ANOMALY DETECTED";
+            } else {
+                chimneyAnomaly.innerText = "";
+            }
+        } else {
+            updateHealthBar(100, chimneyHealthBar, chimneyHealthScore);
+            chimneyAccel.innerText = "—";
+            chimneyRUL.innerText = "—";
+            chimneyAnomaly.innerText = "";
+        }
 
         if (d.trend && d.trend.length > 0) {
             drawChart("chimneyChart", d.trend, chimneyChart, c => chimneyChart = c);
@@ -412,15 +837,36 @@ async function simulateChimney() {
         const statusRes = await fetch("/api/device_status/Oscar-600");
         const statusData = await statusRes.json();
         
-        // If AI auto-clean should trigger, show animation then clean
+        // If AI auto-clean should trigger, FIRST show the degraded state fully
         if (statusData.trigger_auto_clean) {
-            // First show the degraded status briefly
+            // Update ALL UI elements to show the degraded state
             chimneyHealth.innerText = statusData.health;
-            chimneyHealth.style.color = "#f59e0b";
-            chimneyAlert.innerText = "⚠️ Grease detected! AI initiating auto-clean...";
+            chimneyHealth.style.color = "#ef4444";  // Red for severe
+            chimneyAlert.innerText = statusData.alert || "⚠️ Grease detected!";
             chimneySlope.innerText = statusData.slope;
             
-            // Wait a moment to show the problem
+            // Update ML metrics to show degraded state
+            if (statusData.ml_analysis) {
+                const ml = statusData.ml_analysis;
+                updateHealthBar(ml.health_score, chimneyHealthBar, chimneyHealthScore);
+                chimneyAccel.innerText = ml.acceleration ? ml.acceleration.toFixed(6) : "—";
+                if (ml.rul && ml.rul.cycles_to_failure !== null) {
+                    chimneyRUL.innerText = `~${ml.rul.cycles_to_failure} cycles`;
+                } else {
+                    chimneyRUL.innerText = "N/A";
+                }
+            }
+            
+            // Update chart to show degraded state
+            if (statusData.trend && statusData.trend.length > 0) {
+                drawChart("chimneyChart", statusData.trend, chimneyChart, c => chimneyChart = c);
+            }
+            
+            // Wait 2.5 seconds to let user see the degraded state
+            await new Promise(r => setTimeout(r, 2500));
+            
+            // Show AI detection message
+            chimneyAlert.innerText = "🤖 AI detected high grease! Initiating auto-clean...";
             await new Promise(r => setTimeout(r, 1500));
             
             // Now show auto-clean animation
@@ -431,7 +877,7 @@ async function simulateChimney() {
             
             // Show success message briefly
             chimneyAlert.innerText = "✅ AI Auto-Clean Complete!";
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1500));
         }
         
         loadChimneyStatus();

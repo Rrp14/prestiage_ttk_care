@@ -7,6 +7,7 @@ import time
 from rule_engine import kettle_rules, chimney_rules
 from simulator.kettle_sim import KettleSimulator
 from simulator.chimney_sim import ChimneySimulator
+from ml_model import ml_model  # New ML model
 
 
 # App & Global State
@@ -53,10 +54,13 @@ def process_packet(data):
 
 
 def load_telemetry():
-    df = pd.read_csv("data/telemetry_log.csv")
-    df = df[pd.to_numeric(df["timestamp"], errors="coerce").notnull()]
-    df["timestamp"] = pd.to_datetime(df["timestamp"].astype(float), unit="s")
-    return df
+    try:
+        df = pd.read_csv("data/telemetry_log.csv")
+        df = df[pd.to_numeric(df["timestamp"], errors="coerce").notnull()]
+        df["timestamp"] = pd.to_datetime(df["timestamp"].astype(float), unit="s")
+        return df
+    except FileNotFoundError:
+        return pd.DataFrame()
 
 
 def compute_slope(df):
@@ -77,41 +81,79 @@ def compute_slope(df):
     return slope
 
 
-
-# API: Device Health Status
+# API: Device Health Status (Enhanced with ML Model)
 @app.route("/api/device_status/<device_model>", methods=["GET"])
 def device_status(device_model):
     df = load_telemetry()
+    
+    if df.empty:
+        return jsonify({"error": "No data found"}), 404
+    
     device_df = df[df["device_model"] == device_model]
 
     if device_df.empty:
         return jsonify({"error": "No data found"}), 404
 
-    WINDOW = 10
-    device_df = device_df.copy()  # Avoid SettingWithCopyWarning
-    device_df["ma_effort"] = device_df["effort_metric"].rolling(WINDOW).mean()
-
+    # Use new ML model for comprehensive analysis
+    analysis = ml_model.analyze(df, device_model)
+    
+    # Legacy slope calculation for backward compatibility
+    device_df = device_df.copy()
     slope = compute_slope(device_df)
     recent_events = int(device_df["maintenance_event"].tail(10).sum())
 
-    # Apply AI rules
+    # Apply AI rules (using linear slope for status classification)
     if "Smart" in device_model:
         result = kettle_rules(slope)
     else:
         # Pass auto_clean_enabled to get appropriate alerts
         result = chimney_rules(slope, recent_events, auto_clean_enabled)
-        
-        # DON'T auto-clean here - let frontend handle the animation
-        # Just flag if auto-clean should be triggered
 
+    # Override status based on health score if device is degraded but slope is stable
+    health_score = analysis["health_score"]
+    status = result.get("status", "Unknown")
+    alert = result.get("alert", "")
+    
+    # IMPORTANT: Auto-clean decision is based ONLY on health score, not slope
+    # This prevents auto-clean from triggering too early
+    auto_clean = False  # Start with False, only enable based on health score
+    
+    # Auto-clean only triggers at severe degradation (< 30% health)
+    if health_score < 30:
+        if "Smart" in device_model:
+            status = "Severe Scaling"
+            alert = "Severe degradation — Descale immediately!"
+        else:
+            status = "Severe Grease Buildup"
+            alert = "Severe grease buildup — AI Auto-clean activating!"
+            auto_clean = True  # Only auto-clean when severely degraded (< 30%)
+    elif health_score < 50:
+        if "Smart" in device_model:
+            status = "Mild Scaling"
+            alert = "Moderate degradation — Descale soon"
+        else:
+            status = "Grease Buildup"
+            alert = "Grease buildup detected — Consider manual cleaning"
+            # NO auto_clean - just a warning
+    # If health >= 50%, keep original status from rule engine (likely "Healthy")
+
+    # Build response with enhanced ML data
     response = {
         "device_model": device_model,
-        "health": result.get("status", "Unknown"),
+        "health": status,
         "slope": round(slope, 4),
-        "alert": result.get("alert", ""),
-        "trend": device_df["ma_effort"].tail(15).fillna(0).tolist(),
+        "alert": alert,
+        "trend": analysis["trend"],
         "auto_clean_enabled": auto_clean_enabled if "Oscar" in device_model else None,
-        "trigger_auto_clean": result.get("auto_clean", False) and auto_clean_enabled
+        "trigger_auto_clean": auto_clean and auto_clean_enabled,
+        
+        # New ML model data
+        "ml_analysis": {
+            "acceleration": analysis["acceleration"],
+            "health_score": analysis["health_score"],
+            "anomaly": analysis["anomaly"],
+            "rul": analysis["rul"]
+        }
     }
 
     return jsonify(response)
@@ -124,6 +166,7 @@ def toggle_auto_clean():
     global auto_clean_enabled
     auto_clean_enabled = not auto_clean_enabled
     return jsonify({"auto_clean_enabled": auto_clean_enabled})
+
 
 
 # Device ON / OFF
