@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TTK Care – AI Diagnostics Demo</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        /* Dashboard-specific styles (not duplicated from style.css) */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f6f7fb;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* ---------- HOME VIEW ---------- */
+        #homeView {
+            display: flex;
+            justify-content: center;
+            gap: 80px;
+            margin-top: 60px;
+        }
+
+        .device-card {
+            cursor: pointer;
+            transition: transform 0.2s;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .device-card:hover {
+            transform: scale(1.05);
+        }
+
+        .device-card img {
+            height: 220px;
+            object-fit: contain;
+        }
+
+        /* ---------- DASHBOARD ---------- */
+        .back-btn {
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 8px 14px;
+            margin: 6px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: #4f46e5;
+            color: white;
+        }
+
+        button.secondary {
+            background: #6b7280;
+        }
+        
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        select {
+            padding: 6px;
+        }
+        
+        .alert-text {
+            color: #d97706;
+            font-weight: bold;
+        }
+        
+        .healthy {
+            color: #10b981;
+        }
+        
+        .warning {
+            color: #f59e0b;
+        }
+        
+        .danger {
+            color: #ef4444;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .loading-spinner {
+            font-size: 48px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #374151;
+            font-weight: 600;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading-dots {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+        <div class="loading-spinner">⏳</div>
+        <div id="loadingText" class="loading-text">Processing...</div>
+    </div>
+</div>
+
+<h1>TTK Care – AI Diagnostics</h1>
+
+<!-- =====================================================
+                     HOME VIEW
+====================================================== -->
+<div id="homeView">
+    <div class="device-card" onclick="openKettle()">
+        <img src="/static/kettle.webp">
+        <h3>Smart Kettle</h3>
+    </div>
+
+    <div class="device-card" onclick="openChimney()">
+        <img src="/static/chim2.png">
+        <h3>Kitchen Chimney</h3>
+    </div>
+</div>
+
+<!-- =====================================================
+                  KETTLE DASHBOARD
+====================================================== -->
+<div id="kettleView" style="display:none;">
+    <div class="card">
+        <button class="secondary back-btn" onclick="goHome()">← Back</button>
+
+        <h2>Smart Kettle – AI Diagnostics</h2>
+
+        <p>Status: <b id="kettleHealth">—</b></p>
+        <p id="kettleAlert">—</p>
+        <p>Degradation slope: <span id="kettleSlope">—</span></p>
+
+        <label>Simulation Speed:</label>
+        <select id="kettleMultiplier">
+            <option value="10">1× (10 boils)</option>
+            <option value="20">2× (20 boils)</option>
+            <option value="30">3× (30 boils)</option>
+        </select>
+
+        <br><br>
+        <button onclick="simulateKettle()">Simulate Boil</button>
+        <button onclick="descaleKettle()">Descale Kettle</button>
+
+        <canvas id="kettleChart"></canvas>
+    </div>
+</div>
+
+<!-- =====================================================
+                 CHIMNEY DASHBOARD
+====================================================== -->
+<div id="chimneyView" style="display:none;">
+    <div class="card">
+        <button class="secondary back-btn" onclick="goHome()">← Back</button>
+
+        <h2>Kitchen Chimney – AI Diagnostics</h2>
+
+        <p>Status: <b id="chimneyHealth">—</b></p>
+        <p id="chimneyAlert">—</p>
+        <p>Degradation slope: <span id="chimneySlope">—</span></p>
+        <p>AI Auto-Clean: <b id="autoCleanStatus">—</b></p>
+
+        <label>Simulation Speed:</label>
+        <select id="chimneyMultiplier">
+            <option value="10">1× (10 cycles)</option>
+            <option value="20">2× (20 cycles)</option>
+            <option value="30">3× (30 cycles)</option>
+        </select>
+
+        <br><br>
+        <button onclick="simulateChimney()">Simulate Usage</button>
+        <button onclick="autoCleanChimney()">Manual Auto-Clean</button>
+        <button id="toggleBtn" onclick="toggleAutoClean()">Toggle Auto-Clean: ON</button>
+
+        <canvas id="chimneyChart"></canvas>
+    </div>
+</div>
+
+<script>
+let kettleChart, chimneyChart;
+
+// DOM Elements
+const homeView = document.getElementById('homeView');
+const kettleView = document.getElementById('kettleView');
+const chimneyView = document.getElementById('chimneyView');
+const kettleHealth = document.getElementById('kettleHealth');
+const kettleAlert = document.getElementById('kettleAlert');
+const kettleSlope = document.getElementById('kettleSlope');
+const kettleMultiplier = document.getElementById('kettleMultiplier');
+const chimneyHealth = document.getElementById('chimneyHealth');
+const chimneyAlert = document.getElementById('chimneyAlert');
+const chimneySlope = document.getElementById('chimneySlope');
+const chimneyMultiplier = document.getElementById('chimneyMultiplier');
+const autoCleanStatus = document.getElementById('autoCleanStatus');
+const toggleBtn = document.getElementById('toggleBtn');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingText = document.getElementById('loadingText');
+
+// Track auto-clean state locally
+let autoCleanEnabled = true;
+
+/* ---------- LOADING HELPER ---------- */
+function showLoading(message, duration = 2500) {
+    return new Promise((resolve) => {
+        loadingText.innerText = message;
+        loadingOverlay.classList.add('active');
+        setTimeout(() => {
+            loadingOverlay.classList.remove('active');
+            resolve();
+        }, duration);
+    });
+}
+
+/* ---------- VIEW SWITCHING ---------- */
+function openKettle() {
+    homeView.style.display = "none";
+    kettleView.style.display = "block";
+    loadKettleStatus();
+}
+
+function openChimney() {
+    homeView.style.display = "none";
+    chimneyView.style.display = "block";
+    loadChimneyStatus();
+}
+
+function goHome() {
+    kettleView.style.display = "none";
+    chimneyView.style.display = "none";
+    homeView.style.display = "flex";
+}
+
+/* ---------- KETTLE ---------- */
+async function loadKettleStatus() {
+    try {
+        const res = await fetch("/api/device_status/Smart-1.7");
+        if (!res.ok) {
+            kettleHealth.innerText = "No Data";
+            kettleAlert.innerText = "Start simulation to generate data";
+            kettleSlope.innerText = "—";
+            return;
+        }
+        const d = await res.json();
+
+        kettleHealth.innerText = d.health || "Unknown";
+        kettleAlert.innerText = d.alert || "Normal operation";
+        kettleSlope.innerText = d.slope;
+        
+        // Color code the health status
+        if (d.health === "Healthy") {
+            kettleHealth.style.color = "#10b981";
+        } else if (d.health === "Mild Scaling") {
+            kettleHealth.style.color = "#f59e0b";
+        } else {
+            kettleHealth.style.color = "#ef4444";
+        }
+
+        if (d.trend && d.trend.length > 0) {
+            drawChart("kettleChart", d.trend, kettleChart, c => kettleChart = c);
+        }
+    } catch (error) {
+        console.error("Error loading kettle status:", error);
+        kettleHealth.innerText = "Error";
+        kettleAlert.innerText = "Failed to load data";
+    }
+}
+
+async function simulateKettle() {
+    try {
+        await showLoading("☕ Boiling water...", 2000);
+        
+        const cycles = kettleMultiplier.value;
+        const res = await fetch(`/simulate/kettle?cycles=${cycles}`, { method: "POST" });
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.error || "Simulation failed");
+            return;
+        }
+        loadKettleStatus();
+    } catch (error) {
+        console.error("Error simulating kettle:", error);
+    }
+}
+
+async function descaleKettle() {
+    try {
+        await showLoading("🧹 Descaling kettle...\nRemoving mineral buildup", 3000);
+        
+        await fetch("/simulate/kettle/descale", { method: "POST" });
+        loadKettleStatus();
+    } catch (error) {
+        console.error("Error descaling kettle:", error);
+    }
+}
+
+/* ---------- CHIMNEY ---------- */
+async function loadChimneyStatus() {
+    try {
+        const res = await fetch("/api/device_status/Oscar-600");
+        if (!res.ok) {
+            chimneyHealth.innerText = "No Data";
+            chimneyAlert.innerText = "Start simulation to generate data";
+            chimneySlope.innerText = "—";
+            autoCleanStatus.innerText = autoCleanEnabled ? "ON ✓" : "OFF ✗";
+            return;
+        }
+        const d = await res.json();
+
+        chimneyHealth.innerText = d.health || "Unknown";
+        chimneyAlert.innerText = d.alert || "Normal airflow";
+        chimneySlope.innerText = d.slope;
+        
+        // Color code the health status
+        if (d.health === "Healthy") {
+            chimneyHealth.style.color = "#10b981";
+        } else if (d.health === "Grease Buildup") {
+            chimneyHealth.style.color = "#f59e0b";
+        } else {
+            chimneyHealth.style.color = "#ef4444";
+        }
+        
+        // Update auto-clean status display
+        if (d.auto_clean_enabled !== null && d.auto_clean_enabled !== undefined) {
+            autoCleanEnabled = d.auto_clean_enabled;
+        }
+        autoCleanStatus.innerText = autoCleanEnabled ? "ON ✓" : "OFF ✗";
+        autoCleanStatus.style.color = autoCleanEnabled ? "#10b981" : "#ef4444";
+        toggleBtn.innerText = autoCleanEnabled ? "Turn Auto-Clean OFF" : "Turn Auto-Clean ON";
+        toggleBtn.style.background = autoCleanEnabled ? "#10b981" : "#ef4444";
+
+        if (d.trend && d.trend.length > 0) {
+            drawChart("chimneyChart", d.trend, chimneyChart, c => chimneyChart = c);
+        }
+    } catch (error) {
+        console.error("Error loading chimney status:", error);
+        chimneyHealth.innerText = "Error";
+        chimneyAlert.innerText = "Failed to load data";
+    }
+}
+
+async function simulateChimney() {
+    try {
+        await showLoading("🍳 Simulating cooking...", 2000);
+        
+        const cycles = chimneyMultiplier.value;
+        const res = await fetch(`/simulate/chimney?cycles=${cycles}`, { method: "POST" });
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.error || "Simulation failed");
+            return;
+        }
+        
+        // Check status after simulation
+        const statusRes = await fetch("/api/device_status/Oscar-600");
+        const statusData = await statusRes.json();
+        
+        // If AI auto-clean should trigger, show animation then clean
+        if (statusData.trigger_auto_clean) {
+            // First show the degraded status briefly
+            chimneyHealth.innerText = statusData.health;
+            chimneyHealth.style.color = "#f59e0b";
+            chimneyAlert.innerText = "⚠️ Grease detected! AI initiating auto-clean...";
+            chimneySlope.innerText = statusData.slope;
+            
+            // Wait a moment to show the problem
+            await new Promise(r => setTimeout(r, 1500));
+            
+            // Now show auto-clean animation
+            await showLoading("🔥 AI Auto-Clean Activated!\nThermal cleaning in progress...", 3000);
+            
+            // Actually perform the auto-clean
+            await fetch("/simulate/chimney/auto_clean", { method: "POST" });
+            
+            // Show success message briefly
+            chimneyAlert.innerText = "✅ AI Auto-Clean Complete!";
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        
+        loadChimneyStatus();
+    } catch (error) {
+        console.error("Error simulating chimney:", error);
+    }
+}
+
+async function autoCleanChimney() {
+    try {
+        await showLoading("🔥 Running thermal auto-clean...\nBurning off grease buildup", 3000);
+        
+        await fetch("/simulate/chimney/auto_clean", { method: "POST" });
+        loadChimneyStatus();
+    } catch (error) {
+        console.error("Error auto-cleaning chimney:", error);
+    }
+}
+
+async function toggleAutoClean() {
+    try {
+        const res = await fetch("/chimney/auto_clean/toggle", { method: "POST" });
+        const data = await res.json();
+        autoCleanEnabled = data.auto_clean_enabled;
+        loadChimneyStatus();
+    } catch (error) {
+        console.error("Error toggling auto-clean:", error);
+    }
+}
+
+/* ---------- CHART ---------- */
+function drawChart(canvasId, data, existingChart, setter) {
+    const ctx = document.getElementById(canvasId).getContext("2d");
+    if (existingChart) existingChart.destroy();
+
+    const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: data.map((_, i) => i + 1),
+            datasets: [{
+                label: "Performance Trend",
+                data: data,
+                borderWidth: 2,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: false } }
+        }
+    });
+
+    setter(chart);
+}
+</script>
+
+</body>
+</html>

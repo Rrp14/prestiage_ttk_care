@@ -1,0 +1,71 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 30px;
+}
+
+/* -------- HOME PAGE DEVICE ROW -------- */
+.device-row {
+    display: flex;
+    justify-content: center;   /* center horizontally */
+    gap: 40px;                 /* space between kettle & chimney */
+    margin-top: 40px;
+}
+
+/* -------- DEVICE CARD -------- */
+.device-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 260px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.device-card img {
+    width: 160px;        /* force consistent size */
+    height: auto;
+    max-height: 200px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+.device-card {
+    min-height: 360px;
+}
+
+/* clickable effect */
+.clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clickable:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+/* -------- GENERIC CARDS -------- */
+.card {
+    background: white;
+    padding: 20px;
+    margin: 20px auto;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+}
+
+/* -------- CONTROLS -------- */
+.controls button {
+    margin: 10px;
+    padding: 10px 20px;
+}
+
+/* -------- PAGES -------- */
+.page {
+    margin-top: 20px;
+}
